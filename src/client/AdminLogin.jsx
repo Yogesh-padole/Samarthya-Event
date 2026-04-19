@@ -7,7 +7,16 @@ function AdminLogin() {
     password: ""
   });
 
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState(null);
+
   const navigate = useNavigate();
+
+  // ================= TOAST =================
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const handleChange = (e) => {
     setCredentials({
@@ -16,8 +25,10 @@ function AdminLogin() {
     });
   };
 
+  // ================= LOGIN =================
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/login`, {
@@ -31,30 +42,48 @@ function AdminLogin() {
       const data = await res.json();
 
       if (data.success) {
-        alert("Login Successful ✅");
-        navigate("/admin");
+        showToast("Login Successful ✅");
+        setTimeout(() => navigate("/admin"), 1000);
       } else {
-        alert("Invalid Credentials ❌");
+        showToast("Invalid Credentials ❌", "error");
       }
 
     } catch (err) {
       console.error(err);
-      alert("Server error");
+      showToast("Server error", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleClose = () => {
-    navigate("/"); // go back to main dashboard
+    navigate("/");
   };
 
   return (
     <div style={styles.container}>
+
+      {/* TOAST */}
+      {toast && (
+        <div style={{
+          ...styles.toast,
+          background: toast.type === "error" ? "#ff4444" : "#00c853"
+        }}>
+          {toast.msg}
+        </div>
+      )}
+
+      {/* LOADER */}
+      {loading && (
+        <div style={styles.loaderOverlay}>
+          <div style={styles.loader}></div>
+        </div>
+      )}
+
       <div style={styles.box}>
-        
         <h2 style={styles.title}>Admin Login</h2>
 
         <form onSubmit={handleLogin} style={styles.form}>
-          
           <input
             style={styles.input}
             name="username"
@@ -72,20 +101,24 @@ function AdminLogin() {
             required
           />
 
-          <button type="submit" style={styles.loginBtn}>
-            Login
+          <button
+            type="submit"
+            style={styles.loginBtn}
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
         <button onClick={handleClose} style={styles.closeBtn}>
           Close
         </button>
-
       </div>
     </div>
   );
 }
 
+// ================= STYLES =================
 const styles = {
   container: {
     height: "100vh",
@@ -93,7 +126,8 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     background: "linear-gradient(135deg, #0b0b0b, #1a1a1a)",
-    fontFamily: "sans-serif"
+    fontFamily: "sans-serif",
+    padding: "10px"
   },
 
   box: {
@@ -109,8 +143,7 @@ const styles = {
 
   title: {
     color: "gold",
-    marginBottom: "20px",
-    letterSpacing: "1px"
+    marginBottom: "20px"
   },
 
   form: {
@@ -125,8 +158,7 @@ const styles = {
     border: "1px solid #333",
     background: "#0b0b0b",
     color: "white",
-    outline: "none",
-    fontSize: "14px"
+    outline: "none"
   },
 
   loginBtn: {
@@ -136,9 +168,7 @@ const styles = {
     padding: "12px",
     borderRadius: "8px",
     fontWeight: "bold",
-    cursor: "pointer",
-    transition: "0.3s",
-    boxShadow: "0 4px 15px rgba(255,215,0,0.4)"
+    cursor: "pointer"
   },
 
   closeBtn: {
@@ -148,8 +178,42 @@ const styles = {
     color: "#ccc",
     padding: "10px",
     borderRadius: "8px",
-    cursor: "pointer",
-    transition: "0.3s"
+    cursor: "pointer"
+  },
+
+  // 🔥 TOAST
+  toast: {
+    position: "fixed",
+    top: "20px",
+    right: "20px",
+    padding: "12px 20px",
+    borderRadius: "10px",
+    color: "#fff",
+    zIndex: 1000,
+    fontWeight: "bold"
+  },
+
+  // 🔥 LOADER
+  loaderOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background: "rgba(0,0,0,0.7)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999
+  },
+
+  loader: {
+    width: "50px",
+    height: "50px",
+    border: "5px solid #ccc",
+    borderTop: "5px solid gold",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite"
   }
 };
 
