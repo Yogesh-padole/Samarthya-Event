@@ -1,11 +1,18 @@
 const mongoose = require("mongoose");
 
-const DecorationSchema = new mongoose.Schema({
+const decorationSchema = new mongoose.Schema({
   name: String,
-  image: String,
-  price: Number,
+  price: String,
   category: String,
-  decorationIdx: Number
+  decorationIdx: String,
+
+  // ✅ NEW
+  images: [String],
+  public_ids: [String],
+
+  // ✅ OLD (KEEP for safety)
+  image: String,
 });
 
-module.exports = mongoose.model("Decoration", DecorationSchema);
+
+module.exports = mongoose.model("Decoration", decorationSchema);

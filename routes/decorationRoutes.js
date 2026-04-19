@@ -17,29 +17,43 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-// ================= ADD DECORATION =================
-router.post("/add", upload.single("image"), async (req, res) => {
+
+// ================= ADD DECORATION (MULTIPLE IMAGES) =================
+router.post("/add", upload.array("images", 5), async (req, res) => {
   try {
     const { name, price, category, decorationIdx } = req.body;
+
+    // ✅ MULTIPLE IMAGES ARRAY
+    const imageUrls = req.files.map(file => file.path);
+    const publicIds = req.files.map(file => file.filename);
 
     const newDecoration = new Decoration({
       name,
       price,
       category,
       decorationIdx,
-      image: req.file ? req.file.path : "",
-      public_id: req.file ? req.file.filename : "" // ✅ IMPORTANT
+
+      // ✅ NEW FIELDS
+      images: imageUrls,
+      public_ids: publicIds,
+
+      // ✅ KEEP OLD FIELD (BACKWARD COMPATIBILITY)
+      image: imageUrls[0] || "",
     });
 
     await newDecoration.save();
 
-    res.json({ success: true, message: "Decoration added" });
+    res.json({
+      success: true,
+      message: "Decoration added with multiple images 🎉"
+    });
 
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Upload failed" });
   }
 });
+
 
 // ================= GET BY CATEGORY =================
 router.get("/:category", async (req, res) => {

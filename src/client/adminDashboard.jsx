@@ -34,8 +34,9 @@ function AdminDashboard() {
     decorationIdx: ""
   });
 
-  const [imageFile, setImageFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  // ✅ UPDATED STATES (MULTIPLE IMAGES)
+  const [imageFiles, setImageFiles] = useState([]);
+  const [preview, setPreview] = useState([]);
 
   const navigate = useNavigate();
 
@@ -64,11 +65,10 @@ function AdminDashboard() {
   // ================= ACTIONS =================
   const handleApprove = async (id) => {
     try {
-              const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/bookings/approve/${id}`,
-          { method: "PUT" }
-        );
-
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/bookings/approve/${id}`,
+        { method: "PUT" }
+      );
 
       const data = await res.json();
       alert(data.message);
@@ -85,7 +85,6 @@ function AdminDashboard() {
         { method: "PUT" }
       );
 
-
       const data = await res.json();
       alert(data.message);
       fetchBookings();
@@ -98,11 +97,10 @@ function AdminDashboard() {
     if (!window.confirm("Delete this booking?")) return;
 
     try {
-          const res = await fetch(
+      const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/bookings/${id}`,
         { method: "DELETE" }
       );
-
 
       const data = await res.json();
       alert(data.message);
@@ -129,15 +127,14 @@ function AdminDashboard() {
     e.preventDefault();
 
     try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/admin/add-admin`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newAdmin)
-          }
-        );
-
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/admin/add-admin`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newAdmin)
+        }
+      );
 
       const data = await res.json();
 
@@ -161,19 +158,19 @@ function AdminDashboard() {
     });
   };
 
+  // ✅ MULTIPLE IMAGE HANDLER
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImageFile(file);
+    const files = Array.from(e.target.files);
+    setImageFiles(files);
 
-    if (file) {
-      setPreview(URL.createObjectURL(file));
-    }
+    const previews = files.map(file => URL.createObjectURL(file));
+    setPreview(previews);
   };
 
   const handleAddDecoration = async (e) => {
     e.preventDefault();
 
-    if (!imageFile) return alert("Select image");
+    if (imageFiles.length === 0) return alert("Select images");
 
     try {
       const formData = new FormData();
@@ -181,16 +178,19 @@ function AdminDashboard() {
       formData.append("price", decoration.price);
       formData.append("category", decoration.category);
       formData.append("decorationIdx", decoration.decorationIdx);
-      formData.append("image", imageFile);
 
-const res = await fetch(
-  `${import.meta.env.VITE_API_URL}/api/decorations/add`,
-  {
-    method: "POST",
-    body: formData
-  }
-);
+      // ✅ MULTIPLE IMAGES APPEND
+      imageFiles.forEach(file => {
+        formData.append("images", file);
+      });
 
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/decorations/add`,
+        {
+          method: "POST",
+          body: formData
+        }
+      );
 
       const data = await res.json();
 
@@ -204,8 +204,8 @@ const res = await fetch(
           decorationIdx: ""
         });
 
-        setImageFile(null);
-        setPreview(null);
+        setImageFiles([]);
+        setPreview([]);
       }
     } catch (err) {
       console.error(err);
@@ -275,33 +275,30 @@ const res = await fetch(
                       </>
                     )}
 
-                  <td style={styles.td}>
-                  <div style={styles.actionGroup}>
+                    <td style={styles.td}>
+                      <div style={styles.actionGroup}>
+                        <button
+                          style={styles.approveBtn}
+                          onClick={(e) => { e.stopPropagation(); handleApprove(b._id); }}
+                        >
+                          Approve
+                        </button>
 
-                    <button
-                      style={styles.approveBtn}
-                      onClick={(e) => { e.stopPropagation(); handleApprove(b._id); }}
-                    >
-                       Approve
-                    </button>
+                        <button
+                          style={styles.declineBtn}
+                          onClick={(e) => { e.stopPropagation(); handleDecline(b._id); }}
+                        >
+                          Decline
+                        </button>
 
-                    <button
-                      style={styles.declineBtn}
-                      onClick={(e) => { e.stopPropagation(); handleDecline(b._id); }}
-                    >
-                       Decline
-                    </button>
-
-                    <button
-                      style={styles.deleteBtn}
-                      onClick={(e) => { e.stopPropagation(); handleDelete(b._id); }}
-                    >
-                      Delete
-                    </button>
-
-                  </div>
-                </td>
-
+                        <button
+                          style={styles.deleteBtn}
+                          onClick={(e) => { e.stopPropagation(); handleDelete(b._id); }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
                   </tr>
 
                   {isMobile && openIndex === i && (
@@ -325,16 +322,27 @@ const res = await fetch(
       <div style={styles.card}>
         <h2 style={styles.subHeading}>Add Decoration Package</h2>
         <form onSubmit={handleAddDecoration} style={styles.form}>
-          <input style={styles.input} name="name" placeholder="Decoration Name"
-            value={decoration.name} onChange={handleDecorationChange} required />
 
-          <input type="file" accept="image/*"
-            onChange={handleImageChange} style={styles.input} required />
+          <input style={styles.input} name="name"
+            placeholder="Decoration Name"
+            value={decoration.name}
+            onChange={handleDecorationChange} required />
 
-          {preview && <img src={preview} alt="preview" style={styles.previewImg} />}
+          {/* ✅ MULTIPLE IMAGE INPUT */}
+          <input type="file" accept="image/*" multiple
+            onChange={handleImageChange}
+            style={styles.input} required />
+
+          {/* ✅ MULTIPLE PREVIEW */}
+          <div style={styles.previewContainer}>
+            {preview.map((img, i) => (
+              <img key={i} src={img} alt="preview" style={styles.previewImg} />
+            ))}
+          </div>
 
           <input style={styles.input} name="price"
-            placeholder="Price" value={decoration.price}
+            placeholder="Price"
+            value={decoration.price}
             onChange={handleDecorationChange} required />
 
           <select style={styles.input} name="category"
@@ -446,10 +454,20 @@ const styles = {
     background: "#000",
     color: "white"
   },
+
+  previewContainer: {
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap"
+  },
+
   previewImg: {
-    width: "150px",
+    width: "80px",
+    height: "80px",
+    objectFit: "cover",
     borderRadius: "10px"
   },
+
   addBtn: {
     background: "gold",
     border: "none",
@@ -459,54 +477,50 @@ const styles = {
     cursor: "pointer"
   },
 
- actionGroup: {
-  display: "flex",
-  gap: "6px",
-  flexWrap: "wrap", // ✅ mobile friendly
-},
+  actionGroup: {
+    display: "flex",
+    gap: "6px",
+    flexWrap: "wrap",
+  },
 
-approveBtn: {
-  background: "linear-gradient(135deg, #00c853, #69f0ae)",
-  color: "#000",
-  border: "none",
-  padding: "6px 10px",
-  borderRadius: "20px",
-  fontSize: "12px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  flex: "1",
-  minWidth: "80px",
-  transition: "0.2s",
-},
+  approveBtn: {
+    background: "linear-gradient(135deg, #00c853, #69f0ae)",
+    color: "#000",
+    border: "none",
+    padding: "6px 10px",
+    borderRadius: "20px",
+    fontSize: "12px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    flex: "1",
+    minWidth: "80px",
+  },
 
-declineBtn: {
-  background: "linear-gradient(135deg, #ff9800, #ffc107)",
-  color: "#000",
-  border: "none",
-  padding: "6px 10px",
-  borderRadius: "20px",
-  fontSize: "12px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  flex: "1",
-  minWidth: "80px",
-  transition: "0.2s",
-},
+  declineBtn: {
+    background: "linear-gradient(135deg, #ff9800, #ffc107)",
+    color: "#000",
+    border: "none",
+    padding: "6px 10px",
+    borderRadius: "20px",
+    fontSize: "12px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    flex: "1",
+    minWidth: "80px",
+  },
 
-deleteBtn: {
-  background: "linear-gradient(135deg, #ff1744, #ff616f)",
-  color: "#fff",
-  border: "none",
-  padding: "6px 10px",
-  borderRadius: "20px",
-  fontSize: "12px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  flex: "1",
-  minWidth: "80px",
-  transition: "0.2s",
-},
-
+  deleteBtn: {
+    background: "linear-gradient(135deg, #ff1744, #ff616f)",
+    color: "#fff",
+    border: "none",
+    padding: "6px 10px",
+    borderRadius: "20px",
+    fontSize: "12px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    flex: "1",
+    minWidth: "80px",
+  },
 };
 
 export default AdminDashboard;
