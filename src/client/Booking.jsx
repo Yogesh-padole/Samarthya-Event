@@ -1,20 +1,19 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-// ✅ CATEGORIES (SAME AS DASHBOARD)
 const categories = [
-  { name: "Birthday", img: "https://images.unsplash.com/photo-1464349153735-7db50ed83c84" },
-  { name: "Kids Party", img: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9" },
-  { name: "Anniversary", img: "https://images.unsplash.com/photo-1519741497674-611481863552" },
-  { name: "Newborn", img: "https://images.unsplash.com/photo-1609220136736-443140cffec6" },
-  { name: "Balloon Decoration", img:"https://images.unsplash.com/photo-1530104091755-015d31dfa0b9" },
-  { name: "Wedding", img: "https://plus.unsplash.com/premium_photo-1682092632793-c7d75b23718e" },
-  { name: "Corporate Event", img: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d" },
-  { name: "Mandap Decoration", img:"https://images.unsplash.com/photo-1587271636175-90d58cdad458" },
-  { name: "Welcome Decoration", img:"https://images.unsplash.com/photo-1504384308090-c894fdcc538d" },
-  { name: "Rangoli Decoration", img:"https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3" },
-  { name: "Flower Decoration", img:"https://images.unsplash.com/photo-1490750967868-88aa4486c946" },
-  { name: "Stage Decoration", img:"https://images.unsplash.com/photo-1568989357443-057c03fb10fc" },
+  { name: "Birthday" },
+  { name: "Kids Party" },
+  { name: "Anniversary" },
+  { name: "Newborn" },
+  { name: "Balloon Decoration" },
+  { name: "Wedding" },
+  { name: "Corporate Event" },
+  { name: "Mandap Decoration" },
+  { name: "Welcome Decoration" },
+  { name: "Rangoli Decoration" },
+  { name: "Flower Decoration" },
+  { name: "Stage Decoration" },
 ];
 
 function Booking({ onClose }) {
@@ -22,19 +21,23 @@ function Booking({ onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
 
- const [form, setForm] = useState({
-  name: "",
-  mobile: "",
-  email: "",   
-  event: "",
-  date: "",
-  location: "",
-  description: "",
-  decorationIdx: ""
-});
+  const [loading, setLoading] = useState(false);
 
+  // ✅ CUSTOM ALERT
+  const [alertMsg, setAlertMsg] = useState("");
+  const [alertType, setAlertType] = useState(""); // success / error
 
-  // ✅ AUTO-FILL decorationIdx FROM URL
+  const [form, setForm] = useState({
+    name: "",
+    mobile: "",
+    email: "",
+    event: "",
+    date: "",
+    location: "",
+    description: "",
+    decorationIdx: ""
+  });
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const idx = params.get("decorationIdx");
@@ -47,7 +50,6 @@ function Booking({ onClose }) {
     }
   }, [location]);
 
-  // ================= HANDLE CHANGE =================
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -60,9 +62,11 @@ function Booking({ onClose }) {
     e.preventDefault();
 
     if (form.mobile.length !== 10) {
-      alert("Enter valid 10-digit mobile number");
+      showAlert("Enter valid 10-digit mobile number", "error");
       return;
     }
+
+    setLoading(true);
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings/book`, {
@@ -78,143 +82,140 @@ function Booking({ onClose }) {
 
       const data = await res.json();
 
-     if (data.success) {
-  alert("Booking Successful 🎉");
+      if (data.success) {
+        showAlert("Booking Successful 🎉", "success");
 
-  // ✅ RESET FORM
-  setForm({
-    name: "",
-    mobile: "",
-    email: "",
-    event: "",
-    date: "",
-    location: "",
-    description: "",
-    decorationIdx: ""
-  });
+        setForm({
+          name: "",
+          mobile: "",
+          email: "",
+          event: "",
+          date: "",
+          location: "",
+          description: "",
+          decorationIdx: ""
+        });
 
-  navigate("/");
-}
- else {
-        alert("Failed: " + data.message);
+        setTimeout(() => {
+          navigate("/");
+        }, 1500);
+
+      } else {
+        showAlert(data.message || "Booking failed", "error");
       }
 
     } catch (err) {
       console.error(err);
-      alert("Server error");
+      showAlert("Server error", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ================= CLOSE =================
- const handleClose = () => {
-  if (onClose) {
-    onClose();   // close modal
-  }
-};
+  // ================= ALERT FUNCTION =================
+  const showAlert = (msg, type) => {
+    setAlertMsg(msg);
+    setAlertType(type);
 
+    setTimeout(() => {
+      setAlertMsg("");
+    }, 3000);
+  };
+
+  const handleClose = () => {
+    if (onClose) onClose();
+  };
 
   return (
     <div style={styles.overlay} onClick={handleClose}>
+
+      {/* ✅ ALERT */}
+      {alertMsg && (
+        <div style={{
+          ...styles.alert,
+          background: alertType === "success" ? "#00c853" : "#ff1744"
+        }}>
+          {alertMsg}
+        </div>
+      )}
+
       <div style={styles.box} onClick={(e) => e.stopPropagation()}>
 
         <h2 style={styles.title}>✨ Book Your Event</h2>
 
         <form onSubmit={handleSubmit} style={styles.form}>
 
-          <input
-            style={styles.input}
-            name="name"
+          <input style={styles.input} name="name"
             placeholder="Your Name"
             value={form.name}
             onChange={handleChange}
-            required
-          />
+            required />
 
-          <input
-            style={styles.input}
-            name="mobile"
+          <input style={styles.input} name="mobile"
             type="tel"
             placeholder="Mobile Number"
             value={form.mobile}
             onChange={handleChange}
-            required
-          />
-          <input
-            style={styles.input}
-            name="email"
+            required />
+
+          <input style={styles.input} name="email"
             type="email"
-            placeholder="Your Email (for booking updates)"
+            placeholder="Your Email (optional)"
             value={form.email}
             onChange={handleChange}
           />
 
-
-          {/* ✅ DYNAMIC DROPDOWN */}
-          <select
-            style={styles.input}
-            name="event"
+          <select style={styles.input} name="event"
             value={form.event}
             onChange={handleChange}
-            required
-          >
+            required>
             <option value="">Select Event Type</option>
-            {categories.map((cat, index) => (
-              <option key={index} value={cat.name}>
-                {cat.name}
-              </option>
+            {categories.map((cat, i) => (
+              <option key={i} value={cat.name}>{cat.name}</option>
             ))}
           </select>
 
-          <input
-            style={styles.input}
+          <input style={styles.input}
             type="date"
             name="date"
             value={form.date}
             onChange={handleChange}
-            required
-          />
+            required />
 
-          <input
-            style={styles.input}
+          <input style={styles.input}
             name="location"
             placeholder="Enter Event Address"
             value={form.location}
             onChange={handleChange}
-            required
-          />
+            required />
 
-          <textarea
-            style={styles.textarea}
+          <textarea style={styles.textarea}
             name="description"
-            placeholder="Enter event details (optional)"
+            placeholder="Event details (optional)"
             value={form.description}
             onChange={handleChange}
           />
 
-          <input
-            style={styles.input}
+          <input style={styles.input}
             type="number"
             name="decorationIdx"
-            placeholder="Enter Decoration ID associated with your package (see category page)"
+            placeholder="Decoration ID"
             value={form.decorationIdx}
             onChange={handleChange}
-            required
-          />
+            required />
 
-          <button
-            type="submit"
-            style={styles.submitBtn}
-            onMouseEnter={(e) => e.target.style.transform = "scale(1.05)"}
-            onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
-          >
-            Submit Booking 🚀
+          {/* ✅ LOADING BUTTON */}
+          <button type="submit" style={styles.submitBtn} disabled={loading}>
+            {loading ? (
+              <span style={styles.loader}></span>
+            ) : (
+              "Submit Booking 🚀"
+            )}
           </button>
+
         </form>
 
-        <button
-          onClick={handleClose}
-          style={styles.closeBtn}
-        >
+        <button onClick={handleClose} style={styles.closeBtn}>
           Close
         </button>
 
@@ -223,7 +224,7 @@ function Booking({ onClose }) {
   );
 }
 
-// ================= PRO STYLES =================
+// ================= STYLES =================
 const styles = {
   overlay: {
     position: "fixed",
@@ -247,8 +248,7 @@ const styles = {
     maxWidth: "420px",
     color: "white",
     textAlign: "center",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.8)",
-    animation: "fadeIn 0.5s ease"
+    boxShadow: "0 20px 60px rgba(0,0,0,0.8)"
   },
 
   title: {
@@ -271,20 +271,15 @@ const styles = {
     borderRadius: "10px",
     border: "1px solid rgba(255,255,255,0.1)",
     background: "rgba(0,0,0,0.6)",
-    color: "white",
-    outline: "none",
-    fontSize: "14px",
-    transition: "0.3s"
+    color: "white"
   },
 
   textarea: {
     padding: "12px",
     borderRadius: "10px",
-    border: "1px solid rgba(255,255,255,0.1)",
     background: "rgba(0,0,0,0.6)",
     color: "white",
-    minHeight: "90px",
-    resize: "none"
+    minHeight: "80px"
   },
 
   submitBtn: {
@@ -294,20 +289,40 @@ const styles = {
     padding: "12px",
     borderRadius: "12px",
     cursor: "pointer",
-    fontWeight: "bold",
-    fontSize: "15px",
-    transition: "0.3s",
-    boxShadow: "0 5px 20px rgba(255,165,0,0.4)"
+    fontWeight: "bold"
   },
 
   closeBtn: {
     marginTop: "15px",
     background: "transparent",
-    border: "1px solid rgba(255,255,255,0.2)",
+    border: "1px solid #555",
     color: "#ccc",
     padding: "10px",
+    borderRadius: "10px"
+  },
+
+  // ✅ LOADER
+  loader: {
+    width: "18px",
+    height: "18px",
+    border: "3px solid #fff",
+    borderTop: "3px solid transparent",
+    borderRadius: "50%",
+    display: "inline-block",
+    animation: "spin 1s linear infinite"
+  },
+
+  // ✅ ALERT
+  alert: {
+    position: "fixed",
+    top: "20px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    padding: "12px 20px",
     borderRadius: "10px",
-    cursor: "pointer"
+    color: "white",
+    fontWeight: "bold",
+    zIndex: 999
   }
 };
 
