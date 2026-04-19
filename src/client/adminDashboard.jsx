@@ -53,7 +53,7 @@ function AdminDashboard() {
   // ================= BOOKINGS =================
   const fetchBookings = async () => {
     try {
-      const res = await fetch("https://samarthya-event.onrender.com/api/bookings");
+      const res = await fetch("${import.meta.env.VITE_API_URL}/api/bookings");
       const data = await res.json();
       setBookings(data);
     } catch (err) {
@@ -65,7 +65,7 @@ function AdminDashboard() {
   const handleApprove = async (id) => {
     try {
               const res = await fetch(
-          `https://samarthya-event.onrender.com/api/bookings/approve/${id}`,
+          `${import.meta.env.VITE_API_URL}/api/bookings/approve/${id}`,
           { method: "PUT" }
         );
 
@@ -81,7 +81,7 @@ function AdminDashboard() {
   const handleDecline = async (id) => {
     try {
       const res = await fetch(
-        `https://samarthya-event.onrender.com/api/bookings/decline/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/bookings/decline/${id}`,
         { method: "PUT" }
       );
 
@@ -99,7 +99,7 @@ function AdminDashboard() {
 
     try {
           const res = await fetch(
-        `https://samarthya-event.onrender.com/api/bookings/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/bookings/${id}`,
         { method: "DELETE" }
       );
 
@@ -130,7 +130,7 @@ function AdminDashboard() {
 
     try {
         const res = await fetch(
-          "https://samarthya-event.onrender.com/api/admin/add-admin",
+          "${import.meta.env.VITE_API_URL}/api/admin/add-admin",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -184,7 +184,7 @@ function AdminDashboard() {
       formData.append("image", imageFile);
 
 const res = await fetch(
-  "https://samarthya-event.onrender.com/api/decorations/add",
+  "${import.meta.env.VITE_API_URL}/api/decorations/add",
   {
     method: "POST",
     body: formData

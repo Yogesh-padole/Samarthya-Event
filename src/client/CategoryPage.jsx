@@ -22,7 +22,7 @@ function CategoryPage() {
       setLoading(true);
 
       const res = await fetch(
-        `https://samarthya-event.onrender.com/api/decorations/${categoryName}`
+        `${import.meta.env.VITE_API_URL}/api/decorations/${categoryName}`
       );
 
       const data = await res.json();
