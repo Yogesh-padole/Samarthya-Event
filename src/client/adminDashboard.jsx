@@ -23,7 +23,7 @@ function AdminDashboard() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+  const [toast, setToast] = useState(null);
 
   const [newAdmin, setNewAdmin] = useState({
     username: "",
@@ -42,6 +42,13 @@ function AdminDashboard() {
 
   const navigate = useNavigate();
 
+  // ================= TOAST =================
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // ================= INIT =================
   useEffect(() => {
     fetchBookings();
 
@@ -53,23 +60,15 @@ function AdminDashboard() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 🔔 TOAST
-  const showToast = (message, type = "success") => {
-    setToast({ show: true, message, type });
-    setTimeout(() => {
-      setToast({ show: false, message: "", type: "" });
-    }, 3000);
-  };
-
   // ================= BOOKINGS =================
   const fetchBookings = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings`);
       const data = await res.json();
       setBookings(data);
     } catch (err) {
-      showToast("Failed to load bookings", "error");
+      showToast("Error fetching bookings", "error");
     } finally {
       setLoading(false);
     }
@@ -83,11 +82,12 @@ function AdminDashboard() {
         `${import.meta.env.VITE_API_URL}/api/bookings/approve/${id}`,
         { method: "PUT" }
       );
+
       const data = await res.json();
       showToast(data.message);
       fetchBookings();
     } catch {
-      showToast("Error approving", "error");
+      showToast("Error approving booking", "error");
     } finally {
       setLoading(false);
     }
@@ -100,11 +100,12 @@ function AdminDashboard() {
         `${import.meta.env.VITE_API_URL}/api/bookings/decline/${id}`,
         { method: "PUT" }
       );
+
       const data = await res.json();
       showToast(data.message);
       fetchBookings();
     } catch {
-      showToast("Error declining", "error");
+      showToast("Error declining booking", "error");
     } finally {
       setLoading(false);
     }
@@ -119,11 +120,12 @@ function AdminDashboard() {
         `${import.meta.env.VITE_API_URL}/api/bookings/${id}`,
         { method: "DELETE" }
       );
+
       const data = await res.json();
       showToast(data.message);
       fetchBookings();
     } catch {
-      showToast("Error deleting", "error");
+      showToast("Error deleting booking", "error");
     } finally {
       setLoading(false);
     }
@@ -189,17 +191,17 @@ function AdminDashboard() {
     e.preventDefault();
 
     if (imageFiles.length === 0) {
-      return showToast("Select images", "error");
+      showToast("Select images", "error");
+      return;
     }
 
     setLoading(true);
 
     try {
       const formData = new FormData();
-      formData.append("name", decoration.name);
-      formData.append("price", decoration.price);
-      formData.append("category", decoration.category);
-      formData.append("decorationIdx", decoration.decorationIdx);
+      Object.keys(decoration).forEach(key =>
+        formData.append(key, decoration[key])
+      );
 
       imageFiles.forEach(file => {
         formData.append("images", file);
@@ -207,22 +209,14 @@ function AdminDashboard() {
 
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/decorations/add`,
-        {
-          method: "POST",
-          body: formData
-        }
+        { method: "POST", body: formData }
       );
 
       const data = await res.json();
 
       if (data.success) {
         showToast("Decoration Added 🎉");
-        setDecoration({
-          name: "",
-          price: "",
-          category: "",
-          decorationIdx: ""
-        });
+        setDecoration({ name: "", price: "", category: "", decorationIdx: "" });
         setImageFiles([]);
         setPreview([]);
       }
@@ -241,16 +235,16 @@ function AdminDashboard() {
     <div style={styles.container}>
 
       {/* TOAST */}
-      {toast.show && (
+      {toast && (
         <div style={{
           ...styles.toast,
-          background: toast.type === "error" ? "#ff1744" : "#00c853"
+          background: toast.type === "error" ? "#ff4444" : "#00c853"
         }}>
-          {toast.message}
+          {toast.msg}
         </div>
       )}
 
-      {/* LOADER */}
+      {/* LOADING */}
       {loading && (
         <div style={styles.loaderOverlay}>
           <div style={styles.loader}></div>
@@ -267,29 +261,26 @@ function AdminDashboard() {
 
       {/* BOOKINGS */}
       <div style={styles.card}>
-        <h2 style={styles.subHeading}>
-          All Bookings {isMobile && "(Tap row to view details)"}
-        </h2>
+        <h2 style={styles.subHeading}>All Bookings</h2>
 
-        <div style={styles.tableWrapper}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Name</th>
-                <th style={styles.th}>Event</th>
-                <th style={styles.th}>Location</th>
-                {!isMobile && <th style={styles.th}>Date</th>}
-                <th style={styles.th}>Actions</th>
-              </tr>
-            </thead>
+        {bookings.length === 0 ? (
+          <p>No bookings found</p>
+        ) : (
+          <div style={styles.tableWrapper}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Name</th>
+                  <th style={styles.th}>Event</th>
+                  <th style={styles.th}>Location</th>
+                  {!isMobile && <th style={styles.th}>Date</th>}
+                  <th style={styles.th}>Actions</th>
+                </tr>
+              </thead>
 
-            <tbody>
-              {bookings.map((b, i) => (
-                <React.Fragment key={i}>
-                  <tr
-                    onClick={() => isMobile && toggleRow(i)}
-                    style={styles.row}
-                  >
+              <tbody>
+                {bookings.map((b, i) => (
+                  <tr key={i}>
                     <td style={styles.td}>{b.name}</td>
                     <td style={styles.td}>{b.event}</td>
                     <td style={styles.td}>{b.location}</td>
@@ -297,103 +288,112 @@ function AdminDashboard() {
 
                     <td style={styles.td}>
                       <div style={styles.actionGroup}>
-                        <button disabled={loading} style={styles.approveBtn}
-                          onClick={(e) => { e.stopPropagation(); handleApprove(b._id); }}>
-                          ✔
-                        </button>
-
-                        <button disabled={loading} style={styles.declineBtn}
-                          onClick={(e) => { e.stopPropagation(); handleDecline(b._id); }}>
-                          ✖
-                        </button>
-
-                        <button disabled={loading} style={styles.deleteBtn}
-                          onClick={(e) => { e.stopPropagation(); handleDelete(b._id); }}>
-                          🗑
-                        </button>
+                        <button style={styles.approveBtn} onClick={() => handleApprove(b._id)}>Approve</button>
+                        <button style={styles.declineBtn} onClick={() => handleDecline(b._id)}>Decline</button>
+                        <button style={styles.deleteBtn} onClick={() => handleDelete(b._id)}>Delete</button>
                       </div>
                     </td>
                   </tr>
-
-                  {isMobile && openIndex === i && (
-                    <tr>
-                      <td colSpan="5" style={styles.expandBox}>
-                        <p><b>Date:</b> {b.date}</p>
-                        <p><b>ID:</b> {b.decorationIdx}</p>
-                        <p><b>Mobile:</b> {b.mobile}</p>
-                        <p><b>Description:</b> {b.description}</p>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* ADD DECORATION + ADMIN SAME AS BEFORE */}
+      {/* ADD DECORATION */}
+      <div style={styles.card}>
+        <h2 style={styles.subHeading}>Add Decoration</h2>
+        <form onSubmit={handleAddDecoration} style={styles.form}>
+          <input style={styles.input} name="name" placeholder="Name" value={decoration.name} onChange={handleDecorationChange} required />
+          <input type="file" multiple onChange={handleImageChange} style={styles.input} />
+          <div style={styles.previewContainer}>
+            {preview.map((img, i) => <img key={i} src={img} style={styles.previewImg} />)}
+          </div>
+          <input style={styles.input} name="price" placeholder="Price" value={decoration.price} onChange={handleDecorationChange} required />
+
+          <select style={styles.input} name="category" value={decoration.category} onChange={handleDecorationChange} required>
+            <option value="">Select Category</option>
+            {categories.map((cat, i) => <option key={i}>{cat.name}</option>)}
+          </select>
+
+          <input style={styles.input} name="decorationIdx" placeholder="ID" value={decoration.decorationIdx} onChange={handleDecorationChange} required />
+          <button style={styles.addBtn}>Add</button>
+        </form>
+      </div>
+
+      {/* ADD ADMIN */}
+      <div style={styles.card}>
+        <h2 style={styles.subHeading}>Add Admin</h2>
+        <form onSubmit={handleAddAdmin} style={styles.form}>
+          <input style={styles.input} name="username" placeholder="Username" value={newAdmin.username} onChange={handleAdminChange} required />
+          <input style={styles.input} type="password" name="password" placeholder="Password" value={newAdmin.password} onChange={handleAdminChange} required />
+          <button style={styles.addBtn}>Add Admin</button>
+        </form>
+      </div>
 
     </div>
   );
 }
 
+// ================= STYLES =================
 const styles = {
-  container: { padding: "20px", background: "#0f0f0f", minHeight: "100vh", color: "#fff" },
+  container: { background: "#0b0b0b", minHeight: "100vh", padding: "20px", color: "white" },
+  topBar: { display: "flex", justifyContent: "space-between" },
+  heading: { color: "gold" },
 
-  topBar: { display: "flex", justifyContent: "space-between", marginBottom: "20px" },
+  logoutBtn: { border: "1px solid red", color: "red", background: "transparent", padding: "8px", borderRadius: "8px" },
 
-  heading: { color: "#FFD700" },
+  card: { background: "#111", padding: "20px", borderRadius: "16px", marginTop: "20px" },
+  subHeading: { marginBottom: "10px" },
 
-  logoutBtn: { border: "1px solid red", color: "red", padding: "8px 14px", background: "transparent", borderRadius: "8px" },
+  table: { width: "100%" },
+  th: { background: "gold", color: "#000", padding: "10px" },
+  td: { padding: "10px" },
 
-  card: { background: "#181818", padding: "18px", borderRadius: "14px", marginBottom: "20px" },
+  form: { display: "flex", flexDirection: "column", gap: "10px" },
+  input: { padding: "10px", borderRadius: "8px", background: "#000", color: "white" },
 
-  subHeading: { marginBottom: "12px", color: "#ccc" },
-
-  tableWrapper: { overflowX: "auto" },
-
-  table: { width: "100%", borderCollapse: "collapse" },
-
-  th: { background: "#FFD700", color: "#000", padding: "10px" },
-
-  td: { padding: "10px", borderBottom: "1px solid #333" },
-
-  row: { cursor: "pointer" },
-
-  expandBox: { padding: "10px", background: "#222" },
+  addBtn: { background: "gold", padding: "10px", borderRadius: "8px" },
 
   actionGroup: { display: "flex", gap: "5px" },
+  approveBtn: { background: "green", color: "#fff", padding: "5px" },
+  declineBtn: { background: "orange", padding: "5px" },
+  deleteBtn: { background: "red", color: "#fff", padding: "5px" },
 
-  approveBtn: { background: "#00e676", border: "none", padding: "6px 10px", borderRadius: "6px" },
-
-  declineBtn: { background: "#ffb300", border: "none", padding: "6px 10px", borderRadius: "6px" },
-
-  deleteBtn: { background: "#ff1744", border: "none", padding: "6px 10px", borderRadius: "6px", color: "#fff" },
-
-  loaderOverlay: {
-    position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-    background: "rgba(0,0,0,0.6)", display: "flex",
-    justifyContent: "center", alignItems: "center", zIndex: 999
-  },
-
-  loader: {
-    width: "50px", height: "50px",
-    border: "5px solid #333",
-    borderTop: "5px solid gold",
-    borderRadius: "50%",
-    animation: "spin 1s linear infinite"
-  },
+  previewContainer: { display: "flex", gap: "10px" },
+  previewImg: { width: "60px", height: "60px", borderRadius: "8px" },
 
   toast: {
     position: "fixed",
-    bottom: "20px",
+    top: "20px",
     right: "20px",
-    padding: "12px 20px",
+    padding: "10px 20px",
     borderRadius: "8px",
     color: "#fff",
-    fontWeight: "bold",
     zIndex: 1000
+  },
+
+  loaderOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background: "rgba(0,0,0,0.7)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999
+  },
+
+  loader: {
+    width: "50px",
+    height: "50px",
+    border: "5px solid #ccc",
+    borderTop: "5px solid gold",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite"
   }
 };
 
