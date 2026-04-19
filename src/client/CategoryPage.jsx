@@ -22,7 +22,7 @@ function CategoryPage() {
       setLoading(true);
 
       const res = await fetch(
-        `http://192.168.56.1:5000/api/decorations/${categoryName}`
+        `https://samarthya-event.onrender.com/api/decorations/${categoryName}`
       );
 
       const data = await res.json();

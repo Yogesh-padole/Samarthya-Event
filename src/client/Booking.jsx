@@ -65,7 +65,7 @@ function Booking({ onClose }) {
     }
 
     try {
-      const res = await fetch("http://192.168.56.1:5000/api/bookings/book", {
+      const res = await fetch("https://samarthya-event.onrender.com/api/bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

@@ -20,7 +20,7 @@ function AdminLogin() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://192.168.56.1:5000/api/admin/login", {
+      const res = await fetch("https://samarthya-event.onrender.com/api/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
