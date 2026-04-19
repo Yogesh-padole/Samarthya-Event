@@ -215,89 +215,122 @@ const styles = {
   price: { color: "#00ff9d" },
 
   // 🔥 MODAL
-  modalOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    background: "rgba(0,0,0,0.8)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000
-  },
+// 🔥 MODAL IMPROVED
+modalOverlay: {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
+  background: "rgba(0,0,0,0.9)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 1000
+},
 
-  modal: {
-    background: "#111",
-    padding: "20px",
-    borderRadius: "16px",
-    width: "90%",
-    maxWidth: "400px",
-    textAlign: "center",
-    position: "relative"
-  },
+modal: {
+  background: "#0f0f0f",
+  borderRadius: "16px",
+  width: "95%",
+  maxWidth: "600px",
+  padding: "15px",
+  position: "relative",
+  boxShadow: "0 0 30px rgba(0,0,0,0.8)"
+},
 
-  closeBtn: {
-    position: "absolute",
-    top: "10px",
-    right: "10px",
-    background: "red",
-    color: "#fff",
-    border: "none",
-    borderRadius: "50%",
-    padding: "5px 8px",
-    cursor: "pointer"
-  },
+// ❌ FIXED CLOSE BUTTON
+closeBtn: {
+  position: "absolute",
+  top: "12px",
+  right: "12px",
+  background: "rgba(255,0,0,0.9)",
+  color: "#fff",
+  border: "none",
+  borderRadius: "50%",
+  width: "35px",
+  height: "35px",
+  fontSize: "18px",
+  fontWeight: "bold",
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxShadow: "0 0 10px rgba(255,0,0,0.6)"
+},
 
-  modalImgWrapper: {
-    position: "relative"
-  },
+// 🔥 BIG IMAGE AREA
+modalImgWrapper: {
+  position: "relative",
+  width: "100%",
+  height: "60vh", // 👈 BIG IMAGE
+  borderRadius: "12px",
+  overflow: "hidden"
+},
 
-  modalImg: {
-    width: "100%",
-    height: "220px",
-    objectFit: "cover",
-    borderRadius: "12px"
-  },
+modalImg: {
+  width: "100%",
+  height: "100%",
+  objectFit: "cover"
+},
 
-  leftBtn: {
-    position: "absolute",
-    top: "50%",
-    left: "10px",
-    transform: "translateY(-50%)",
-    background: "#000",
-    color: "#fff",
-    border: "none",
-    padding: "5px",
-    cursor: "pointer"
-  },
+// 🔥 ARROWS IMPROVED
+leftBtn: {
+  position: "absolute",
+  top: "50%",
+  left: "10px",
+  transform: "translateY(-50%)",
+  background: "rgba(0,0,0,0.6)",
+  color: "#fff",
+  border: "none",
+  padding: "10px",
+  borderRadius: "50%",
+  fontSize: "16px",
+  cursor: "pointer"
+},
 
-  rightBtn: {
-    position: "absolute",
-    top: "50%",
-    right: "10px",
-    transform: "translateY(-50%)",
-    background: "#000",
-    color: "#fff",
-    border: "none",
-    padding: "5px",
-    cursor: "pointer"
-  },
+rightBtn: {
+  position: "absolute",
+  top: "50%",
+  right: "10px",
+  transform: "translateY(-50%)",
+  background: "rgba(0,0,0,0.6)",
+  color: "#fff",
+  border: "none",
+  padding: "10px",
+  borderRadius: "50%",
+  fontSize: "16px",
+  cursor: "pointer"
+},
 
-  modalTitle: { marginTop: "10px" },
-  modalPrice: { color: "#00ff9d" },
-  modalId: { color: "gold", fontSize: "12px" },
+// 🔥 TEXT AREA
+modalTitle: {
+  marginTop: "12px",
+  fontSize: "18px"
+},
 
-  bookBtn: {
-    marginTop: "15px",
-    background: "gold",
-    border: "none",
-    padding: "10px",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "bold"
-  }
+modalPrice: {
+  color: "#00ff9d",
+  fontSize: "16px",
+  fontWeight: "bold"
+},
+
+modalId: {
+  color: "gold",
+  fontSize: "12px"
+},
+
+bookBtn: {
+  marginTop: "15px",
+  background: "linear-gradient(45deg, gold, orange)",
+  border: "none",
+  padding: "12px",
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontWeight: "bold",
+  width: "100%"
+}
+
 };
 
 export default CategoryPage;
