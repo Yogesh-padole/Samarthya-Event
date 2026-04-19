@@ -266,7 +266,7 @@ modalImgWrapper: {
   height: "60vh",
   borderRadius: "12px",
   overflow: "hidden",
-  zIndex: 1   // 👈 lower than close button
+  zIndex: 1   
 },
 
 
@@ -320,6 +320,16 @@ modalPrice: {
 modalId: {
   color: "gold",
   fontSize: "12px"
+},
+bookBtn: {
+  marginTop: "15px",
+  background: "linear-gradient(45deg, gold, orange)",
+  border: "none",
+  padding: "12px",
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontWeight: "bold",
+  width: "100%"
 },
 
 closeBtn: {
