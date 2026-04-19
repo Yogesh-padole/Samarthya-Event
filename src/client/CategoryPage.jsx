@@ -263,10 +263,12 @@ closeBtn: {
 modalImgWrapper: {
   position: "relative",
   width: "100%",
-  height: "60vh", // 👈 BIG IMAGE
+  height: "60vh",
   borderRadius: "12px",
-  overflow: "hidden"
+  overflow: "hidden",
+  zIndex: 1   // 👈 lower than close button
 },
+
 
 modalImg: {
   width: "100%",
@@ -320,16 +322,27 @@ modalId: {
   fontSize: "12px"
 },
 
-bookBtn: {
-  marginTop: "15px",
-  background: "linear-gradient(45deg, gold, orange)",
+closeBtn: {
+  position: "absolute",
+  top: "12px",
+  right: "12px",
+  background: "rgba(255,0,0,0.95)",
+  color: "#fff",
   border: "none",
-  padding: "12px",
-  borderRadius: "10px",
-  cursor: "pointer",
+  borderRadius: "50%",
+  width: "38px",
+  height: "38px",
+  fontSize: "18px",
   fontWeight: "bold",
-  width: "100%"
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+
+  zIndex: 9999,           
+  pointerEvents: "auto"   
 }
+
 
 };
 
