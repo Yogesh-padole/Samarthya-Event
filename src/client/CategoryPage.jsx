@@ -9,11 +9,9 @@ function CategoryPage() {
 
   const navigate = useNavigate();
 
-  // ✅ EXISTING MODAL STATES (UNCHANGED)
   const [showBooking, setShowBooking] = useState(false);
   const [selectedPkg, setSelectedPkg] = useState(null);
 
-  // ✅ NEW STATE FOR IMAGE SLIDER
   const [currentImg, setCurrentImg] = useState({});
 
   useEffect(() => {
@@ -38,13 +36,11 @@ function CategoryPage() {
     }
   };
 
-  // ✅ UNCHANGED FUNCTION
   const handleSelect = (pkg) => {
     setSelectedPkg(pkg);
     setShowBooking(true);
   };
 
-  // ✅ SLIDER FUNCTIONS
   const nextImage = (id, length) => {
     setCurrentImg(prev => ({
       ...prev,
@@ -63,7 +59,6 @@ function CategoryPage() {
     <>
       <div style={styles.container}>
 
-        {/* BACK BUTTON */}
         <button 
           style={styles.backBtn}
           onClick={() => navigate("/")}
@@ -83,7 +78,12 @@ function CategoryPage() {
 
         <div style={styles.grid}>
           {packages.map((p) => {
-            const images = p.images || [p.image]; // fallback for old data
+
+            // ✅ FIXED IMAGE LOGIC
+            const images = (p.images && p.images.length > 0)
+              ? p.images
+              : (p.image ? [p.image] : []);
+
             const currentIndex = currentImg[p._id] || 0;
 
             return (
@@ -100,15 +100,22 @@ function CategoryPage() {
                   e.currentTarget.style.boxShadow = "0 10px 25px rgba(0,0,0,0.5)";
                 }}
               >
-                {/* IMAGE SLIDER */}
-                <div style={styles.imgWrapper}>
-                  <img 
-                    src={images[currentIndex]} 
-                    alt={p.name}
-                    style={styles.img}
-                  />
 
-                  {/* LEFT BUTTON */}
+                <div style={styles.imgWrapper}>
+                  
+                  {/* ✅ SAFE IMAGE RENDER */}
+                  {images.length > 0 ? (
+                    <img 
+                      src={images[currentIndex]} 
+                      alt={p.name}
+                      style={styles.img}
+                    />
+                  ) : (
+                    <div style={{ ...styles.img, display: "flex", alignItems: "center", justifyContent: "center", color: "#999" }}>
+                      No Image
+                    </div>
+                  )}
+
                   {images.length > 1 && (
                     <>
                       <button
@@ -121,7 +128,6 @@ function CategoryPage() {
                         ◀
                       </button>
 
-                      {/* RIGHT BUTTON */}
                       <button
                         style={styles.rightBtn}
                         onClick={(e) => {
@@ -136,10 +142,9 @@ function CategoryPage() {
                 </div>
 
                 <h3 style={styles.title}>{p.name}</h3>
-
                 <p style={styles.price}>₹{p.price}</p>
-
                 <p style={styles.id}>ID: {p.decorationIdx}</p>
+
               </div>
             );
           })}
@@ -147,11 +152,8 @@ function CategoryPage() {
 
       </div>
 
-      {/* ✅ BOOKING MODAL (UNCHANGED) */}
       {showBooking && (
-        <Booking
-          onClose={() => setShowBooking(false)}
-        />
+        <Booking onClose={() => setShowBooking(false)} />
       )}
     </>
   );
@@ -165,7 +167,6 @@ const styles = {
     padding: "20px",
     fontFamily: "sans-serif"
   },
-
   backBtn: {
     position: "fixed",
     top: "15px",
@@ -180,7 +181,6 @@ const styles = {
     backdropFilter: "blur(6px)",
     zIndex: 10
   },
-
   heading: {
     textAlign: "center",
     marginBottom: "30px",
@@ -190,21 +190,18 @@ const styles = {
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent"
   },
-
   msg: {
     textAlign: "center",
     marginTop: "30px",
     color: "#bbb",
     fontSize: "16px"
   },
-
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
     gap: "20px",
     padding: "10px"
   },
-
   card: {
     background: "rgba(255,255,255,0.05)",
     borderRadius: "18px",
@@ -216,21 +213,17 @@ const styles = {
     transition: "all 0.3s ease",
     boxShadow: "0 10px 25px rgba(0,0,0,0.5)"
   },
-
   imgWrapper: {
-    position: "relative", // IMPORTANT
+    position: "relative",
     overflow: "hidden",
     borderRadius: "12px",
     marginBottom: "10px"
   },
-
   img: {
     width: "100%",
     height: "140px",
-    objectFit: "cover",
-    transition: "transform 0.4s ease"
+    objectFit: "cover"
   },
-
   leftBtn: {
     position: "absolute",
     top: "50%",
@@ -243,7 +236,6 @@ const styles = {
     borderRadius: "50%",
     cursor: "pointer"
   },
-
   rightBtn: {
     position: "absolute",
     top: "50%",
@@ -256,19 +248,16 @@ const styles = {
     borderRadius: "50%",
     cursor: "pointer"
   },
-
   title: {
     fontSize: "15px",
     marginBottom: "5px",
     fontWeight: "500"
   },
-
   price: {
     color: "#00ff9d",
     fontWeight: "600",
     marginBottom: "5px"
   },
-
   id: {
     color: "gold",
     fontSize: "11px"
