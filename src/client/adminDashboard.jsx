@@ -204,6 +204,21 @@ function AdminDashboard() {
 
   return (
     <div style={styles.container}>
+              {/* 🔥 GLOBAL LOADER */}
+      {globalLoading && <div style={styles.loaderOverlay}><div style={styles.loader}></div></div>}
+
+      {/* 🔥 TOAST */}
+      {toast && (
+        <div style={{
+          ...styles.toast,
+          background:
+            toast.type === "error" ? "#ff1744" :
+            toast.type === "warn" ? "#ffb300" :
+            "#00e676"
+        }}>
+          {toast.msg}
+        </div>
+      )}
 
       {/* HEADER */}
       <div style={styles.topBar}>
@@ -478,7 +493,41 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
     color: "#fff"
+  },
+  container: { padding: 20, background: "#0f0f0f", minHeight: "100vh", color: "#fff" },
+
+  loaderOverlay: {
+    position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+    background: "rgba(0,0,0,0.7)", display: "flex",
+    justifyContent: "center", alignItems: "center", zIndex: 9999
+  },
+
+  loader: {
+    width: "50px", height: "50px",
+    border: "5px solid #333",
+    borderTop: "5px solid gold",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite"
+  },
+
+  btnLoader: {
+    width: "15px", height: "15px",
+    border: "2px solid #fff",
+    borderTop: "2px solid transparent",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite"
+  },
+
+  toast: {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    padding: "10px 16px",
+    borderRadius: "8px",
+    color: "#fff",
+    zIndex: 9999
   }
+
 };
 
 export default AdminDashboard;
