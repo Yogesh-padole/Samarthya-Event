@@ -6,7 +6,7 @@ require("dotenv").config();
 const app = express();
 
 // ================= MIDDLEWARE =================
-app.use(cors());
+
 app.use(express.json());
 
 // ✅ Serve uploaded images (VERY IMPORTANT)
@@ -22,6 +22,7 @@ const adminRoutes = require("./routes/admin");
 app.use(cors({
   origin: "*"
 }));
+
 
 
 // ✅ Clean API structure

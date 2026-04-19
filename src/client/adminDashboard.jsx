@@ -53,7 +53,7 @@ function AdminDashboard() {
   // ================= BOOKINGS =================
   const fetchBookings = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/bookings");
+      const res = await fetch("https://samarthya-event.onrender.com/api/bookings");
       const data = await res.json();
       setBookings(data);
     } catch (err) {
@@ -64,9 +64,11 @@ function AdminDashboard() {
   // ================= ACTIONS =================
   const handleApprove = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/bookings/approve/${id}`, {
-        method: "PUT"
-      });
+              const res = await fetch(
+          `https://samarthya-event.onrender.com/api/bookings/approve/${id}`,
+          { method: "PUT" }
+        );
+
 
       const data = await res.json();
       alert(data.message);
@@ -78,9 +80,11 @@ function AdminDashboard() {
 
   const handleDecline = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/bookings/decline/${id}`, {
-        method: "PUT"
-      });
+      const res = await fetch(
+        `https://samarthya-event.onrender.com/api/bookings/decline/${id}`,
+        { method: "PUT" }
+      );
+
 
       const data = await res.json();
       alert(data.message);
@@ -94,9 +98,11 @@ function AdminDashboard() {
     if (!window.confirm("Delete this booking?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/bookings/${id}`, {
-        method: "DELETE"
-      });
+          const res = await fetch(
+        `https://samarthya-event.onrender.com/api/bookings/${id}`,
+        { method: "DELETE" }
+      );
+
 
       const data = await res.json();
       alert(data.message);
@@ -123,11 +129,15 @@ function AdminDashboard() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/api/admin/add-admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newAdmin)
-      });
+        const res = await fetch(
+          "https://samarthya-event.onrender.com/api/admin/add-admin",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newAdmin)
+          }
+        );
+
 
       const data = await res.json();
 
@@ -173,10 +183,14 @@ function AdminDashboard() {
       formData.append("decorationIdx", decoration.decorationIdx);
       formData.append("image", imageFile);
 
-      const res = await fetch("http://localhost:5000/api/decorations/add", {
-        method: "POST",
-        body: formData
-      });
+const res = await fetch(
+  "https://samarthya-event.onrender.com/api/decorations/add",
+  {
+    method: "POST",
+    body: formData
+  }
+);
+
 
       const data = await res.json();
 
