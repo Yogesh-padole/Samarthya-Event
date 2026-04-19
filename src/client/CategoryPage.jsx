@@ -9,10 +9,13 @@ function CategoryPage() {
 
   const navigate = useNavigate();
 
-  const [showBooking, setShowBooking] = useState(false);
+  // ✅ MODAL STATES
   const [selectedPkg, setSelectedPkg] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-  const [currentImg, setCurrentImg] = useState({});
+  const [showBooking, setShowBooking] = useState(false);
+
+  const [currentImg, setCurrentImg] = useState(0);
 
   useEffect(() => {
     fetchPackages();
@@ -36,23 +39,19 @@ function CategoryPage() {
     }
   };
 
-  const handleSelect = (pkg) => {
+  // ✅ OPEN MODAL
+  const handleOpen = (pkg) => {
     setSelectedPkg(pkg);
-    setShowBooking(true);
+    setCurrentImg(0);
+    setShowModal(true);
   };
 
-  const nextImage = (id, length) => {
-    setCurrentImg(prev => ({
-      ...prev,
-      [id]: ((prev[id] || 0) + 1) % length
-    }));
+  const nextImage = (length) => {
+    setCurrentImg((prev) => (prev + 1) % length);
   };
 
-  const prevImage = (id, length) => {
-    setCurrentImg(prev => ({
-      ...prev,
-      [id]: ((prev[id] || 0) - 1 + length) % length
-    }));
+  const prevImage = (length) => {
+    setCurrentImg((prev) => (prev - 1 + length) % length);
   };
 
   return (
@@ -78,73 +77,17 @@ function CategoryPage() {
 
         <div style={styles.grid}>
           {packages.map((p) => {
-
-            // ✅ FIXED IMAGE LOGIC
-            const images = (p.images && p.images.length > 0)
-              ? p.images
-              : (p.image ? [p.image] : []);
-
-            const currentIndex = currentImg[p._id] || 0;
+            const img = p.images?.[0] || p.image;
 
             return (
               <div
                 key={p._id}
                 style={styles.card}
-                onClick={() => handleSelect(p)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-6px) scale(1.02)";
-                  e.currentTarget.style.boxShadow = "0 15px 35px rgba(0,0,0,0.7)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "none";
-                  e.currentTarget.style.boxShadow = "0 10px 25px rgba(0,0,0,0.5)";
-                }}
+                onClick={() => handleOpen(p)}
               >
-
-                <div style={styles.imgWrapper}>
-                  
-                  {/* ✅ SAFE IMAGE RENDER */}
-                  {images.length > 0 ? (
-                    <img 
-                      src={images[currentIndex]} 
-                      alt={p.name}
-                      style={styles.img}
-                    />
-                  ) : (
-                    <div style={{ ...styles.img, display: "flex", alignItems: "center", justifyContent: "center", color: "#999" }}>
-                      No Image
-                    </div>
-                  )}
-
-                  {images.length > 1 && (
-                    <>
-                      <button
-                        style={styles.leftBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          prevImage(p._id, images.length);
-                        }}
-                      >
-                        ◀
-                      </button>
-
-                      <button
-                        style={styles.rightBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          nextImage(p._id, images.length);
-                        }}
-                      >
-                        ▶
-                      </button>
-                    </>
-                  )}
-                </div>
-
+                <img src={img} alt={p.name} style={styles.img} />
                 <h3 style={styles.title}>{p.name}</h3>
                 <p style={styles.price}>₹{p.price}</p>
-                <p style={styles.id}>ID: {p.decorationIdx}</p>
-
               </div>
             );
           })}
@@ -152,6 +95,64 @@ function CategoryPage() {
 
       </div>
 
+      {/* ================= MODAL ================= */}
+      {showModal && selectedPkg && (
+        <div style={styles.modalOverlay}>
+
+          <div style={styles.modal}>
+
+            {/* CLOSE */}
+            <button style={styles.closeBtn} onClick={() => setShowModal(false)}>
+              ✖
+            </button>
+
+            {/* IMAGES */}
+            <div style={styles.modalImgWrapper}>
+              <img
+                src={selectedPkg.images?.[currentImg] || selectedPkg.image}
+                style={styles.modalImg}
+              />
+
+              {selectedPkg.images?.length > 1 && (
+                <>
+                  <button
+                    style={styles.leftBtn}
+                    onClick={() => prevImage(selectedPkg.images.length)}
+                  >
+                    ◀
+                  </button>
+
+                  <button
+                    style={styles.rightBtn}
+                    onClick={() => nextImage(selectedPkg.images.length)}
+                  >
+                    ▶
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* DETAILS */}
+            <h2 style={styles.modalTitle}>{selectedPkg.name}</h2>
+            <p style={styles.modalPrice}>₹{selectedPkg.price}</p>
+            <p style={styles.modalId}>ID: {selectedPkg.decorationIdx}</p>
+
+            {/* BOOK BUTTON */}
+            <button
+              style={styles.bookBtn}
+              onClick={() => {
+                setShowModal(false);
+                setShowBooking(true);
+              }}
+            >
+              Book Now
+            </button>
+
+          </div>
+        </div>
+      )}
+
+      {/* BOOKING */}
       {showBooking && (
         <Booking onClose={() => setShowBooking(false)} />
       )}
@@ -159,108 +160,143 @@ function CategoryPage() {
   );
 }
 
+// ================= STYLES =================
 const styles = {
   container: {
     background: "linear-gradient(135deg, #0f0f0f, #1c1c1c)",
     minHeight: "100vh",
     color: "white",
-    padding: "20px",
-    fontFamily: "sans-serif"
+    padding: "20px"
   },
+
   backBtn: {
     position: "fixed",
     top: "15px",
     left: "15px",
-    background: "rgba(255,215,0,0.1)",
+    background: "transparent",
     border: "1px solid gold",
     color: "gold",
     padding: "8px 14px",
     borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: "bold",
-    backdropFilter: "blur(6px)",
-    zIndex: 10
+    cursor: "pointer"
   },
+
   heading: {
     textAlign: "center",
     marginBottom: "30px",
-    fontSize: "clamp(22px, 4vw, 32px)",
-    fontWeight: "600",
-    background: "linear-gradient(90deg, gold, orange)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent"
+    fontSize: "26px",
+    color: "gold"
   },
-  msg: {
-    textAlign: "center",
-    marginTop: "30px",
-    color: "#bbb",
-    fontSize: "16px"
-  },
+
+  msg: { textAlign: "center", color: "#bbb" },
+
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: "20px",
-    padding: "10px"
+    gap: "20px"
   },
+
   card: {
-    background: "rgba(255,255,255,0.05)",
-    borderRadius: "18px",
-    padding: "12px",
-    cursor: "pointer",
-    textAlign: "center",
-    backdropFilter: "blur(10px)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    transition: "all 0.3s ease",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.5)"
-  },
-  imgWrapper: {
-    position: "relative",
-    overflow: "hidden",
+    background: "#111",
+    padding: "10px",
     borderRadius: "12px",
-    marginBottom: "10px"
+    cursor: "pointer",
+    textAlign: "center"
   },
+
   img: {
     width: "100%",
     height: "140px",
-    objectFit: "cover"
+    objectFit: "cover",
+    borderRadius: "10px"
   },
+
+  title: { fontSize: "14px" },
+  price: { color: "#00ff9d" },
+
+  // 🔥 MODAL
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background: "rgba(0,0,0,0.8)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000
+  },
+
+  modal: {
+    background: "#111",
+    padding: "20px",
+    borderRadius: "16px",
+    width: "90%",
+    maxWidth: "400px",
+    textAlign: "center",
+    position: "relative"
+  },
+
+  closeBtn: {
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    background: "red",
+    color: "#fff",
+    border: "none",
+    borderRadius: "50%",
+    padding: "5px 8px",
+    cursor: "pointer"
+  },
+
+  modalImgWrapper: {
+    position: "relative"
+  },
+
+  modalImg: {
+    width: "100%",
+    height: "220px",
+    objectFit: "cover",
+    borderRadius: "12px"
+  },
+
   leftBtn: {
     position: "absolute",
     top: "50%",
-    left: "5px",
+    left: "10px",
     transform: "translateY(-50%)",
-    background: "rgba(0,0,0,0.5)",
-    border: "none",
+    background: "#000",
     color: "#fff",
-    padding: "5px 8px",
-    borderRadius: "50%",
+    border: "none",
+    padding: "5px",
     cursor: "pointer"
   },
+
   rightBtn: {
     position: "absolute",
     top: "50%",
-    right: "5px",
+    right: "10px",
     transform: "translateY(-50%)",
-    background: "rgba(0,0,0,0.5)",
-    border: "none",
+    background: "#000",
     color: "#fff",
-    padding: "5px 8px",
-    borderRadius: "50%",
+    border: "none",
+    padding: "5px",
     cursor: "pointer"
   },
-  title: {
-    fontSize: "15px",
-    marginBottom: "5px",
-    fontWeight: "500"
-  },
-  price: {
-    color: "#00ff9d",
-    fontWeight: "600",
-    marginBottom: "5px"
-  },
-  id: {
-    color: "gold",
-    fontSize: "11px"
+
+  modalTitle: { marginTop: "10px" },
+  modalPrice: { color: "#00ff9d" },
+  modalId: { color: "gold", fontSize: "12px" },
+
+  bookBtn: {
+    marginTop: "15px",
+    background: "gold",
+    border: "none",
+    padding: "10px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold"
   }
 };
 
