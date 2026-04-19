@@ -1,0 +1,13 @@
+/* RESET ONLY */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* BODY BASE */
+body {
+  font-family: sans-serif;
+  background: #0a192f; /* match your dashboard */
+  color: white;
+}
