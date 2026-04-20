@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import React from "react";
+import toast from "react-hot-toast";
 
 const categories = [
   { name: "Birthday" },
@@ -37,6 +38,10 @@ function AdminDashboard() {
   const [imageFiles, setImageFiles] = useState([]);
   const [preview, setPreview] = useState([]);
 
+  // ✅ NEW LOADING STATES
+  const [loadingId, setLoadingId] = useState(null);
+  const [btnLoading, setBtnLoading] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,51 +62,73 @@ function AdminDashboard() {
       setBookings(data);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load bookings");
     }
   };
 
   const handleApprove = async (id) => {
+    setLoadingId(id);
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/bookings/approve/${id}`,
         { method: "PUT" }
       );
       const data = await res.json();
-      alert(data.message);
-      fetchBookings();
-    } catch (err) {
-      console.error(err);
+
+      if (data.success) {
+        toast.success("Approved ✅");
+        fetchBookings();
+      } else {
+        toast.error(data.message);
+      }
+    } catch {
+      toast.error("Error approving");
     }
+    setLoadingId(null);
   };
 
   const handleDecline = async (id) => {
+    setLoadingId(id);
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/bookings/decline/${id}`,
         { method: "PUT" }
       );
       const data = await res.json();
-      alert(data.message);
-      fetchBookings();
-    } catch (err) {
-      console.error(err);
+
+      if (data.success) {
+        toast.success("Declined ❌");
+        fetchBookings();
+      } else {
+        toast.error(data.message);
+      }
+    } catch {
+      toast.error("Error declining");
     }
+    setLoadingId(null);
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this booking?")) return;
 
+    setLoadingId(id);
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/bookings/${id}`,
         { method: "DELETE" }
       );
       const data = await res.json();
-      alert(data.message);
-      fetchBookings();
-    } catch (err) {
-      console.error(err);
+
+      if (data.success) {
+        toast.success("Deleted 🗑");
+        fetchBookings();
+      } else {
+        toast.error(data.message);
+      }
+    } catch {
+      toast.error("Delete failed");
     }
+    setLoadingId(null);
   };
 
   const handleLogout = () => {
@@ -117,6 +144,7 @@ function AdminDashboard() {
 
   const handleAddAdmin = async (e) => {
     e.preventDefault();
+    setBtnLoading(true);
 
     try {
       const res = await fetch(
@@ -131,14 +159,16 @@ function AdminDashboard() {
       const data = await res.json();
 
       if (data.success) {
-        alert("Admin Added ✅");
+        toast.success("Admin Added ✅");
         setNewAdmin({ username: "", password: "" });
       } else {
-        alert(data.message);
+        toast.error(data.message);
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      toast.error("Failed to add admin");
     }
+
+    setBtnLoading(false);
   };
 
   const handleDecorationChange = (e) => {
@@ -157,7 +187,9 @@ function AdminDashboard() {
   const handleAddDecoration = async (e) => {
     e.preventDefault();
 
-    if (imageFiles.length === 0) return alert("Select images");
+    if (imageFiles.length === 0) return toast.error("Select images");
+
+    setBtnLoading(true);
 
     try {
       const formData = new FormData();
@@ -181,7 +213,7 @@ function AdminDashboard() {
       const data = await res.json();
 
       if (data.success) {
-        alert("Decoration Added 🎉");
+        toast.success("Decoration Added 🎉");
 
         setDecoration({
           name: "",
@@ -192,10 +224,14 @@ function AdminDashboard() {
 
         setImageFiles([]);
         setPreview([]);
+      } else {
+        toast.error(data.message);
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      toast.error("Upload failed");
     }
+
+    setBtnLoading(false);
   };
 
   const toggleRow = (index) => {
@@ -204,8 +240,6 @@ function AdminDashboard() {
 
   return (
     <div style={styles.container}>
-        
-      {/* HEADER */}
       <div style={styles.topBar}>
         <h1 style={styles.heading}>Admin Dashboard</h1>
         <button style={styles.logoutBtn} onClick={handleLogout}>
@@ -232,10 +266,7 @@ function AdminDashboard() {
             <tbody>
               {bookings.map((b, i) => (
                 <React.Fragment key={i}>
-                  <tr
-                    onClick={() => isMobile && toggleRow(i)}
-                    style={styles.row}
-                  >
+                  <tr onClick={() => isMobile && toggleRow(i)} style={styles.row}>
                     <td style={styles.td}>{b.name}</td>
                     <td style={styles.td}>{b.event}</td>
                     <td style={styles.td}>{b.location}</td>
@@ -243,19 +274,28 @@ function AdminDashboard() {
 
                     <td style={styles.td}>
                       <div style={styles.actionGroup}>
-                        <button style={styles.approveBtn}
-                          onClick={(e) => { e.stopPropagation(); handleApprove(b._id); }}>
-                          ✔
+                        <button
+                          style={styles.approveBtn}
+                          disabled={loadingId === b._id}
+                          onClick={(e) => { e.stopPropagation(); handleApprove(b._id); }}
+                        >
+                          {loadingId === b._id ? "..." : "✔"}
                         </button>
 
-                        <button style={styles.declineBtn}
-                          onClick={(e) => { e.stopPropagation(); handleDecline(b._id); }}>
-                          ✖
+                        <button
+                          style={styles.declineBtn}
+                          disabled={loadingId === b._id}
+                          onClick={(e) => { e.stopPropagation(); handleDecline(b._id); }}
+                        >
+                          {loadingId === b._id ? "..." : "✖"}
                         </button>
 
-                        <button style={styles.deleteBtn}
-                          onClick={(e) => { e.stopPropagation(); handleDelete(b._id); }}>
-                          🗑
+                        <button
+                          style={styles.deleteBtn}
+                          disabled={loadingId === b._id}
+                          onClick={(e) => { e.stopPropagation(); handleDelete(b._id); }}
+                        >
+                          {loadingId === b._id ? "..." : "🗑"}
                         </button>
                       </div>
                     </td>
@@ -311,7 +351,9 @@ function AdminDashboard() {
             value={decoration.decorationIdx}
             onChange={handleDecorationChange} required />
 
-          <button style={styles.addBtn}>Add</button>
+          <button style={styles.addBtn} disabled={btnLoading}>
+            {btnLoading ? "Processing..." : "Add"}
+          </button>
         </form>
       </div>
 
@@ -331,13 +373,16 @@ function AdminDashboard() {
             value={newAdmin.password}
             onChange={handleAdminChange} required />
 
-          <button style={styles.addBtn}>Add Admin</button>
+          <button style={styles.addBtn} disabled={btnLoading}>
+            {btnLoading ? "Processing..." : "Add Admin"}
+          </button>
         </form>
       </div>
 
     </div>
   );
 }
+
 
 const styles = {
   container: {
