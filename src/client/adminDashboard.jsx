@@ -38,7 +38,6 @@ function AdminDashboard() {
   const [imageFiles, setImageFiles] = useState([]);
   const [preview, setPreview] = useState([]);
 
-  // ✅ NEW LOADING STATES
   const [loadingId, setLoadingId] = useState(null);
   const [btnLoading, setBtnLoading] = useState(false);
 
@@ -75,11 +74,11 @@ function AdminDashboard() {
       );
       const data = await res.json();
 
-      if (data.success) {
-        toast.success("Approved ✅");
+      if (res.ok) {
+        toast.success(data.message || "Approved ✅");
         fetchBookings();
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Failed");
       }
     } catch {
       toast.error("Error approving");
@@ -96,11 +95,11 @@ function AdminDashboard() {
       );
       const data = await res.json();
 
-      if (data.success) {
-        toast.success("Declined ❌");
+      if (res.ok) {
+        toast.success(data.message || "Declined ❌");
         fetchBookings();
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Failed");
       }
     } catch {
       toast.error("Error declining");
@@ -119,11 +118,11 @@ function AdminDashboard() {
       );
       const data = await res.json();
 
-      if (data.success) {
-        toast.success("Deleted 🗑");
+      if (res.ok) {
+        toast.success(data.message || "Deleted 🗑");
         fetchBookings();
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Delete failed");
       }
     } catch {
       toast.error("Delete failed");
@@ -158,11 +157,11 @@ function AdminDashboard() {
 
       const data = await res.json();
 
-      if (data.success) {
-        toast.success("Admin Added ✅");
+      if (res.ok) {
+        toast.success(data.message || "Admin Added ✅");
         setNewAdmin({ username: "", password: "" });
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Failed to add admin");
       }
     } catch {
       toast.error("Failed to add admin");
@@ -212,8 +211,8 @@ function AdminDashboard() {
 
       const data = await res.json();
 
-      if (data.success) {
-        toast.success("Decoration Added 🎉");
+      if (res.ok) {
+        toast.success(data.message || "Decoration Added 🎉");
 
         setDecoration({
           name: "",
@@ -225,7 +224,7 @@ function AdminDashboard() {
         setImageFiles([]);
         setPreview([]);
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Upload failed");
       }
     } catch {
       toast.error("Upload failed");
@@ -247,7 +246,6 @@ function AdminDashboard() {
         </button>
       </div>
 
-      {/* BOOKINGS */}
       <div style={styles.card}>
         <h2 style={styles.subHeading}>Bookings</h2>
 
@@ -318,7 +316,6 @@ function AdminDashboard() {
         </div>
       </div>
 
-      {/* ADD DECORATION */}
       <div style={styles.card}>
         <h2 style={styles.subHeading}>Add Decoration</h2>
 
@@ -357,7 +354,6 @@ function AdminDashboard() {
         </form>
       </div>
 
-      {/* ADD ADMIN */}
       <div style={styles.card}>
         <h2 style={styles.subHeading}>Add Admin</h2>
 
